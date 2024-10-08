@@ -4,6 +4,7 @@ require_once '../libs/Db.php';
 require_once '../libs/Session.php';
 require_once '../libs/Logger.php';
 require_once '../libs/ReservationManager.php';
+require_once '../libs/CacheManager.php';
 
 // Initialize session
 Session::init();
@@ -18,6 +19,7 @@ if (!Session::isAdmin()) {
 $db = new Db();
 $logger = new Logger();
 $reservationManager = new ReservationManager($db, $logger);
+$cacheManager = new CacheManager();
 
 // Get dashboard statistics
 $today = date('Y-m-d');
@@ -27,6 +29,27 @@ $monthEnd = date('Y-m-t');
 $todayReservations = $reservationManager->getReservationsByDate($today);
 $monthlyStats = $reservationManager->getStatistics($monthStart, $monthEnd);
 $upcomingReservations = $reservationManager->getUpcomingReservations(5);
+
+// Get real-time notifications
+$notifications = [];
+$pendingReviews = $db->query("SELECT COUNT(*) as count FROM food_reviews WHERE is_approved = 0")->fetch();
+$lowStockItems = $db->query("SELECT COUNT(*) as count FROM food WHERE stock_quantity < 10")->fetch();
+
+if ($pendingReviews['count'] > 0) {
+    $notifications[] = [
+        'type' => 'warning',
+        'message' => "{$pendingReviews['count']} reviews pending approval",
+        'icon' => 'fa-exclamation-triangle'
+    ];
+}
+
+if ($lowStockItems['count'] > 0) {
+    $notifications[] = [
+        'type' => 'danger',
+        'message' => "{$lowStockItems['count']} items low on stock",
+        'icon' => 'fa-exclamation-circle'
+    ];
+}
 
 // Log admin dashboard access
 $logger->logActivity('admin_dashboard_accessed', [
@@ -81,6 +104,22 @@ $logger->logActivity('admin_dashboard_accessed', [
         .status-pending { border-left-color: #ffc107; }
         .status-confirmed { border-left-color: #28a745; }
         .status-cancelled { border-left-color: #dc3545; }
+        .notification-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .notification-warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        .notification-danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -123,6 +162,27 @@ $logger->logActivity('admin_dashboard_accessed', [
             <!-- Main Content -->
             <div class="col-md-9">
                 <h2 class="mb-4">Dashboard Overview</h2>
+
+                <!-- Notifications -->
+                <?php if (!empty($notifications)): ?>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="fa fa-bell"></i> Notifications</h5>
+                            </div>
+                            <div class="card-body">
+                                <?php foreach ($notifications as $notification): ?>
+                                    <div class="notification-item notification-<?php echo $notification['type']; ?>">
+                                        <i class="fa <?php echo $notification['icon']; ?>"></i>
+                                        <?php echo htmlspecialchars($notification['message']); ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
 
                 <!-- Statistics Cards -->
                 <div class="row">
