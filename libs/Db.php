@@ -1,4 +1,7 @@
 <?php 
+use PDO;
+use PDOException;
+
 class Db {
     private $pdo;
     

@@ -1,10 +1,10 @@
 <?php 
 // Database Configuration
-define('BASEURL','http://localhost/project/');
+define('BASEURL','http://localhost/hotel/');
 define('HOSTNAME','localhost');
 define('USERNAME','root');
 define('PASSWORD','');
-define('DB','project');
+define('DB','foodchef');
 
 // Environment Configuration
 define('ENVIRONMENT', 'development'); // development, staging, production

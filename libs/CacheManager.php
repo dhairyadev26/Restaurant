@@ -1,4 +1,6 @@
 <?php
+use PDO;
+
 /**
  * Cache Manager for Food Chef Cafe Management System
  * Handles caching for improved performance
