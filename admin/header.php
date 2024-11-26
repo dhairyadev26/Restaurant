@@ -19,12 +19,12 @@
         <?php 
         if(isset($_SESSION['logindtl'])){
         ?>
-          <li><a href="<?php echo BASEURL;?>banner">Banner</a></li>
-          <li><a href="<?php echo BASEURL;?>about">About</a></li>
-          <li><a href="<?php echo BASEURL;?>services">Services</a></li>
-          <li><a href="<?php echo BASEURL;?>team">Team</a></li>
-          <li><a href="<?php echo BASEURL;?>food">Food</a></li>
-          <li><a href="<?php echo BASEURL;?>contact">Contact</a></li>
+          <li><a href="<?php echo BASEURL;?>admin/banner">Banner</a></li>
+          <li><a href="<?php echo BASEURL;?>admin/about">About</a></li>
+          <li><a href="<?php echo BASEURL;?>admin/services">Services</a></li>
+          <li><a href="<?php echo BASEURL;?>admin/team">Team</a></li>
+          <li><a href="<?php echo BASEURL;?>admin/food">Food</a></li>
+          <li><a href="<?php echo BASEURL;?>admin/contact">Contact</a></li>
         <?php } ?>
         </ul>
       </li>
@@ -34,7 +34,7 @@
         <?php 
         if(!isset($_SESSION['logindtl'])){
         ?>
-      <li><a href="<?php echo BASEURL;?>"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      <li><a href="<?php echo BASEURL;?>admin/login"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
     <?php }else{ ?>
       <li><a href="<?php echo BASEURL;?>login/logout"><span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
     <?php }?>
