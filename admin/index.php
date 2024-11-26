@@ -28,8 +28,8 @@ if(isset($_SESSION['logindtl'])){
 }
 
 // session_start(); 
-include "config/config.php";
-include 'libs/Db.php';
+include "../config/config.php";
+include '../libs/Db.php';
 $dbobj=new Db;
 include "header.php";
 if(file_exists("modules/$mod/$do.php")){
