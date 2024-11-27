@@ -1,24 +1,42 @@
 <?php
-if($id){
-
-	extract($dbobj->fetchOne('banner',$id));
-	
-}
-if(isset($_POST['title'])){
-	if($_FILES['image']['name']){
-		$_POST['image']=time()."_image_".$_FILES['image']['name'];
-		move_uploaded_file($_FILES['image']['tmp_name'],"public/images/".$_POST['image']);
-		// print_r($_POST);
+if($id && is_numeric($id)){
+	$data = $dbobj->fetchOne('banner',$id);
+	if($data){
+		extract($data);
 	}
-	// print_r($_POST);
-	$dbobj->addEdit('banner',$_POST,$id);
-	header("location:".BASEURL."banner");
+}
+
+if(isset($_POST['title']) && !empty($_POST['title'])){
+	$title = trim($_POST['title']);
+	$description = trim($_POST['description']);
+	
+	$postData = [
+		'title' => $title,
+		'description' => $description
+	];
+	
+	if($_FILES['image']['name'] && $_FILES['image']['error'] == 0){
+		$allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+		if(in_array($_FILES['image']['type'], $allowedTypes)){
+			$imageName = time()."_image_".$_FILES['image']['name'];
+			$uploadPath = "../public/images/".$imageName;
+			
+			if(move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)){
+				$postData['image'] = $imageName;
+			}
+		}
+	}
+	
+	$dbobj->addEdit('banner', $postData, $id);
+	$_SESSION['message'] = $id ? "Banner updated successfully" : "Banner added successfully";
+	header("Location:".BASEURL."admin/banner");
+	exit;
 }
 
 ?>
-<link rel="stylesheet" type="text/css" href="public/css/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="public/css/style.css">
-    <link href="public/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../public/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="../public/css/style.css">
+<link href="../public/css/font-awesome.min.css" rel="stylesheet">
 
 <style type="text/css">
 	form{
@@ -68,12 +86,12 @@ if(isset($_POST['title'])){
 			<?php if(isset($image) && $image){ ?>
 						Uploaded Image:
 					<?php
-					if(file_exists("public/images/$image")){
+					if(file_exists("../public/images/$image")){
 					?>
 						<img src="<?php echo BASEURL."public/images/$image";?>" height="50px" width="50px" />
 					<?php
 					}else{
-						echo "Not uploaded Properly";
+						echo "Image not found";
 					}
 				}
 			?>
@@ -82,10 +100,10 @@ if(isset($_POST['title'])){
 			Image:<input type="file" name="image"><br/>
 		</div>
 		<div class="one">
-			Title:<input type="text" name="title" value="<?php echo (isset($title))?$title:'';?>"><br/>
+			Title:<input type="text" name="title" value="<?php echo htmlspecialchars(isset($title) ? $title : '');?>" required><br/>
 		</div>
 		<div class="one">
-			Description:<input type="text" name="description" value="<?php echo (isset($description))?$description:'';?>"><br/>
+			Description:<textarea name="description" rows="3" style="width: 100%;"><?php echo htmlspecialchars(isset($description) ? $description : '');?></textarea><br/>
 		</div>
 		<div class="one">
 			<button type="submit">save</button>
