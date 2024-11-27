@@ -1,12 +1,18 @@
 <?php
-// $_SESSION['message']="data saved";
-if($id){
-	// session_start();
-	$dbobj->delete('banner',$id);
+// Display success/error messages
+if(isset($_SESSION['message'])){
+	echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['message']) . '</div>';
+	unset($_SESSION['message']);
+}
 
-	$_SESSION['message']="data deleted";
-	header("Location:".BASEURL."banner");
-	exit;
+if($id){
+	// Validate ID is numeric
+	if(is_numeric($id)){
+		$dbobj->delete('banner',$id);
+		$_SESSION['message']="Data deleted successfully";
+		header("Location:".BASEURL."admin/banner");
+		exit;
+	}
 }
 	$alldata=$dbobj->fetchAll("select * from banner order by id desc");
 
@@ -29,7 +35,7 @@ if($id){
 		<th>Action</th>
 	</tr>
 	<tr>
-		<td colspan="5"><a href="<?php echo BASEURL;?>banner/create">Add New Record</a></td>
+		<td colspan="5"><a href="<?php echo BASEURL;?>admin/banner/create">Add New Record</a></td>
 	</tr>
 	<?php
 	$sno=0;
@@ -56,8 +62,8 @@ if($id){
 			?>
 		</td>
 		<td>
-			<a href="<?php echo BASEURL;?>banner/create/<?php echo $data['id']; ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
-			<a href="#" onclick="delclick('<?php echo BASEURL;?>banner/index/<?php echo $data['id']; ?>')">Delete</a>
+			<a href="<?php echo BASEURL;?>admin/banner/create/<?php echo htmlspecialchars($data['id']); ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
+			<a href="#" onclick="delclick('<?php echo BASEURL;?>admin/banner/index/<?php echo htmlspecialchars($data['id']); ?>')">Delete</a>
 		</td>
 	</tr>
 	<?php } ?>
