@@ -1,17 +1,24 @@
 <?php
 
-	extract($dbobj->fetchOne('about',1));
+	$aboutData = $dbobj->fetchOne('about',1);
+	if($aboutData){
+		extract($aboutData);
+	}
 	
-if(isset($_POST['description'])){
-	// print_r($_POST);
-	$dbobj->addEdit('about',$_POST,$id);
-	header("location:".BASEURL."about");
+if(isset($_POST['description']) && !empty($_POST['description'])){
+	$description = trim($_POST['description']);
+	$postData = ['description' => $description];
+	
+	$dbobj->addEdit('about', $postData, 1);
+	$_SESSION['message'] = "About section updated successfully";
+	header("Location:".BASEURL."admin/about");
+	exit;
 }
 
 ?>
 <script src="https://cdn.ckeditor.com/ckeditor5/12.4.0/classic/ckeditor.js"></script>
-<link rel="stylesheet" type="text/css" href="public/css/style.css">
-    <link href="public/css/font-awesome.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="../public/css/style.css">
+<link href="../public/css/font-awesome.min.css" rel="stylesheet">
 
 <style type="text/css">
 	form{
@@ -54,10 +61,15 @@ if(isset($_POST['description'])){
 </style>
 
 
+<?php if(isset($_SESSION['message'])): ?>
+	<div class="alert alert-success"><?php echo htmlspecialchars($_SESSION['message']); ?></div>
+	<?php unset($_SESSION['message']); ?>
+<?php endif; ?>
+
 <form method="post" action="">
 	<h1>About</h1>
 	<div class="main">
-		<textarea name="description" id="editor"><?php echo (isset($description))?$description:'';?></textarea>
+		<textarea name="description" id="editor"><?php echo htmlspecialchars(isset($description) ? $description : '');?></textarea>
 		<div class="one">
 			<button type="submit">save</button>
 	 	</div>
