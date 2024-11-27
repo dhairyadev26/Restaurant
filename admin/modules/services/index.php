@@ -1,7 +1,14 @@
 <?php
-if($id){	
+// Display success/error messages
+if(isset($_SESSION['message'])){
+	echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['message']) . '</div>';
+	unset($_SESSION['message']);
+}
+
+if($id && is_numeric($id)){	
 	$dbobj->delete('services',$id);
-	header("Location:".BASEURL."services");
+	$_SESSION['message'] = "Service deleted successfully";
+	header("Location:".BASEURL."admin/services");
 	exit;
 }
 	$alldata=$dbobj->fetchAll("select * from services order by id desc");
@@ -23,7 +30,7 @@ if($id){
 		<th>Action</th>
 	</tr>
 	<tr>
-		<td colspan="4"><a href="<?php echo BASEURL;?>services/create">Add New Record</a></td>
+		<td colspan="4"><a href="<?php echo BASEURL;?>admin/services/create">Add New Record</a></td>
 	</tr>
 	<?php
 	$sno=0;
@@ -34,8 +41,8 @@ if($id){
 		<td><?php echo $data['icon'] ?></td>
 		<td><?php echo $data['description'] ?></td>
 		<td>
-			<a href="<?php echo BASEURL;?>services/create/<?php echo $data['id']; ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
-			<a href="#" onclick="delclick('<?php echo BASEURL;?>services/index/<?php echo $data['id']; ?>')">Delete</a>
+			<a href="<?php echo BASEURL;?>admin/services/create/<?php echo htmlspecialchars($data['id']); ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
+			<a href="#" onclick="delclick('<?php echo BASEURL;?>admin/services/index/<?php echo htmlspecialchars($data['id']); ?>')">Delete</a>
 		</td>
 	</tr>
 	<?php } ?>
