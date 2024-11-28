@@ -1,9 +1,14 @@
 <?php
-// $_SESSION['message']="data saved";
-if($id){
-	// session_start();
+// Display success/error messages
+if(isset($_SESSION['message'])){
+	echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['message']) . '</div>';
+	unset($_SESSION['message']);
+}
+
+if($id && is_numeric($id)){
 	$dbobj->delete('food',$id);
-	header("Location:".BASEURL."food");
+	$_SESSION['message'] = "Food item deleted successfully";
+	header("Location:".BASEURL."admin/food");
 	exit;
 }
 	$alldata=$dbobj->fetchAll("select * from food order by id desc");
@@ -26,7 +31,7 @@ if($id){
 		<th>Action</th>
 	</tr>
 	<tr>
-		<td colspan="5"><a href="<?php echo BASEURL;?>food/create">Add New Record</a></td>
+		<td colspan="5"><a href="<?php echo BASEURL;?>admin/food/create">Add New Record</a></td>
 	</tr>
 	<?php
 	$sno=0;
@@ -38,23 +43,23 @@ if($id){
 		<td><?php echo $data['description'] ?></td>
 		<td>
 			<?php if($data['image']){
-							if(file_exists("public/images/$data[image]")){
+							if(file_exists("../public/images/$data[image]")){
 							?>
 								<img class="one" src="<?php echo BASEURL."public/images/$data[image]";?>" height="50px" width="50px" />
 							<?php
 
 							}else{
-								echo "Not uploaded Properly";
+								echo "Image not found";
 							}
 
 						}else{
-							echo "not uploaded";
+							echo "No image uploaded";
 						}				
 			?>
 		</td>
 		<td>
-			<a href="<?php echo BASEURL;?>food/create/<?php echo $data['id']; ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
-			<a href="#" onclick="delclick('<?php echo BASEURL;?>food/index/<?php echo $data['id']; ?>')">Delete</a>
+			<a href="<?php echo BASEURL;?>admin/food/create/<?php echo htmlspecialchars($data['id']); ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
+			<a href="#" onclick="delclick('<?php echo BASEURL;?>admin/food/index/<?php echo htmlspecialchars($data['id']); ?>')">Delete</a>
 		</td>
 	</tr>
 	<?php } ?>
