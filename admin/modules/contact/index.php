@@ -1,11 +1,14 @@
 <?php
-// $_SESSION['message']="data saved";
-if($id){
-	// session_start();
-	$dbobj->delete('contact',$id);
+// Display success/error messages
+if(isset($_SESSION['message'])){
+	echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['message']) . '</div>';
+	unset($_SESSION['message']);
+}
 
-	// $_SESSION['message']="data deleted";
-	header("Location:".BASEURL."contact");
+if($id && is_numeric($id)){
+	$dbobj->delete('contact',$id);
+	$_SESSION['message'] = "Contact message deleted successfully";
+	header("Location:".BASEURL."admin/contact");
 	exit;
 }
 	$alldata=$dbobj->fetchAll("select * from contact order by id desc");
@@ -30,7 +33,7 @@ if($id){
 		<th>Action</th>
 	</tr>
 	<tr>
-		<td colspan="6"><a href="<?php echo BASEURL;?>contact/create">Add New Record</a></td>
+		<td colspan="6"><a href="<?php echo BASEURL;?>admin/contact/create">Add New Record</a></td>
 	</tr>
 	<?php
 	$sno=0;
@@ -43,8 +46,8 @@ if($id){
 		<td><?php echo $data['mobileno'] ?></td>
 		<td><?php echo $data['msg'] ?></td>
 		<td>
-			<a href="<?php echo BASEURL;?>contact/create/<?php echo $data['id']; ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
-			<a href="#" onclick="delclick('<?php echo BASEURL;?>contact/index/<?php echo $data['id']; ?>')">Delete</a>
+			<a href="<?php echo BASEURL;?>admin/contact/create/<?php echo htmlspecialchars($data['id']); ?>">Edit</a>&nbsp; &nbsp; | &nbsp; &nbsp;
+			<a href="#" onclick="delclick('<?php echo BASEURL;?>admin/contact/index/<?php echo htmlspecialchars($data['id']); ?>')">Delete</a>
 		</td>
 	</tr>
 	<?php } ?>
