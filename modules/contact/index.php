@@ -68,7 +68,7 @@
 
 						
 						<script type="text/javascript">
-							location.href="index";
+							window.location.href = "<?php echo BASEURL; ?>";
 						</script>
 						<?php 
 					}else{
