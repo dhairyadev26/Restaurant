@@ -12,8 +12,8 @@
 					<div class="grid">
 						
 						<figure class="effect-roxy">
-							<a class="example-image-link" href="<?php echo BASEURL."admin/public/images/$food_value[image]";?>" data-lightbox="example-set" data-title="">
-								<img src="<?php echo BASEURL."admin/public/images/$food_value[image]";?>" alt="" style="width: 200px; height: 250px;"/>
+							<a class="example-image-link" href="<?php echo BASEURL."public/images/$food_value[image]";?>" data-lightbox="example-set" data-title="">
+								<img src="<?php echo BASEURL."public/images/$food_value[image]";?>" alt="" style="width: 200px; height: 250px;"/>
 								<figcaption>
 									<h3><?php echo $food_value['title']; ?></h3>
 									<p><?php echo $food_value['description']; ?></p>
