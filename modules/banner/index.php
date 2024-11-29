@@ -10,7 +10,7 @@
 					?>
 					<li>
 						<div class="">
-						<div class="banner-dott" style="background: url('<?php echo BASEURL."admin/public/images/$banner_value[image]";?>')">
+						<div class="banner-dott" style="background: url('<?php echo BASEURL."public/images/$banner_value[image]";?>')">
 							<div class="container">
 								<div data-aos="fade-left" class="agileits-banner-info">
 									<h3><?php echo $banner_value['title']; ?></h3>
@@ -56,7 +56,7 @@
 					<div data-aos="fade-up" class="col-md-3 agile_team_grid">
 						<div class="ih-item circle effect1">
 							<div class="spinner"></div>
-							<div class="img"><img src="<?php echo BASEURL."admin/public/images/$team_value[photo]";?>" alt=" " class="img-responsive" /></div>
+							<div class="img"><img src="<?php echo BASEURL."public/images/$team_value[photo]";?>" alt=" " class="img-responsive" /></div>
 						</div>
 						<h4><?php echo $team_value['name'];?></h4>
 						<p><?php echo $team_value['title']; ?></p> 
