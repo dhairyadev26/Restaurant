@@ -12,7 +12,7 @@
 					<div data-aos="fade-up" class="col-md-3 agile_team_grid">
 						<div class="ih-item circle effect1">
 							<div class="spinner"></div>
-							<div class="img"><img src="<?php echo BASEURL."admin/public/images/$team_value[photo]";?>" alt=" " class="img-responsive" /></div>
+							<div class="img"><img src="<?php echo BASEURL."public/images/$team_value[photo]";?>" alt=" " class="img-responsive" /></div>
 						</div>
 						<h4><?php echo $team_value['name'];?></h4>
 						<p><?php echo $team_value['title']; ?></p> 
