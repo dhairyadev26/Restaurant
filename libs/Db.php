@@ -61,9 +61,14 @@ class Db {
         }
     }
     
-    function fetchQry($qry) {
+    function fetchQry($qry, $params = []) {
         try {
-            $stmt = $this->pdo->query($qry);
+            if (!empty($params)) {
+                $stmt = $this->pdo->prepare($qry);
+                $stmt->execute($params);
+            } else {
+                $stmt = $this->pdo->query($qry);
+            }
             return $stmt->fetch();
         } catch (PDOException $e) {
             error_log("Database error in fetchQry: " . $e->getMessage());
@@ -71,9 +76,14 @@ class Db {
         }
     }
     
-    function fetchAll($sql) {
+    function fetchAll($sql, $params = []) {
         try {
-            $stmt = $this->pdo->query($sql);
+            if (!empty($params)) {
+                $stmt = $this->pdo->prepare($sql);
+                $stmt->execute($params);
+            } else {
+                $stmt = $this->pdo->query($sql);
+            }
             return $stmt->fetchAll();
         } catch (PDOException $e) {
             error_log("Database error in fetchAll: " . $e->getMessage());
@@ -127,6 +137,45 @@ class Db {
     
     function rollBack() {
         return $this->pdo->rollBack();
+    }
+    
+    function tableExists($tableName) {
+        try {
+            $sql = "SHOW TABLES LIKE ?";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([$tableName]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Database error in tableExists: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    function getTableColumns($tableName) {
+        try {
+            $sql = "DESCRIBE `$tableName`";
+            $stmt = $this->pdo->query($sql);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            error_log("Database error in getTableColumns: " . $e->getMessage());
+            return [];
+        }
+    }
+    
+    function count($table, $where = '', $params = []) {
+        try {
+            $sql = "SELECT COUNT(*) as count FROM `$table`";
+            if ($where) {
+                $sql .= " WHERE $where";
+            }
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+            $result = $stmt->fetch();
+            return $result['count'] ?? 0;
+        } catch (PDOException $e) {
+            error_log("Database error in count: " . $e->getMessage());
+            return 0;
+        }
     }
 }
 ?>
