@@ -99,6 +99,22 @@ class Security {
             $errors[] = 'File type not allowed';
         }
         
+        // Additional security checks
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+        
+        $allowedMimes = [
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg', 
+            'png' => 'image/png',
+            'gif' => 'image/gif'
+        ];
+        
+        if (!in_array($mimeType, $allowedMimes)) {
+            $errors[] = 'Invalid file MIME type';
+        }
+        
         return $errors;
     }
     
@@ -158,6 +174,54 @@ class Security {
         file_put_contents($cacheFile, json_encode($attempts));
         
         return true; // Within rate limit
+    }
+    
+    /**
+     * Validate and sanitize phone number
+     * @param string $phone
+     * @return string|false
+     */
+    public static function validatePhone($phone) {
+        $phone = preg_replace('/[^0-9+\-\(\)\s]/', '', $phone);
+        if (strlen($phone) < 10) {
+            return false;
+        }
+        return $phone;
+    }
+    
+    /**
+     * Check password strength
+     * @param string $password
+     * @return array
+     */
+    public static function checkPasswordStrength($password) {
+        $score = 0;
+        $feedback = [];
+        
+        if (strlen($password) >= 8) $score++;
+        if (preg_match('/[a-z]/', $password)) $score++;
+        if (preg_match('/[A-Z]/', $password)) $score++;
+        if (preg_match('/[0-9]/', $password)) $score++;
+        if (preg_match('/[^A-Za-z0-9]/', $password)) $score++;
+        
+        if ($score < 3) {
+            $feedback[] = 'Password is too weak';
+        } elseif ($score < 5) {
+            $feedback[] = 'Password strength is moderate';
+        } else {
+            $feedback[] = 'Password is strong';
+        }
+        
+        return ['score' => $score, 'feedback' => $feedback];
+    }
+    
+    /**
+     * Prevent XSS attacks
+     * @param string $input
+     * @return string
+     */
+    public static function preventXSS($input) {
+        return htmlspecialchars($input, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 }
 ?>
