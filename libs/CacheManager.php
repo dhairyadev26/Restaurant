@@ -1,124 +1,234 @@
 <?php
-use PDO;
-
 /**
- * Cache Manager for Food Chef Cafe Management System
- * Handles caching for improved performance
+ * Cache Manager Class
+ * Provides caching functionality to improve application performance
  */
-
 class CacheManager {
-    
-    private $cachePath;
+    private $cacheDir;
     private $defaultTTL;
     
-    public function __construct($cachePath = 'cache/', $defaultTTL = 3600) {
-        $this->cachePath = rtrim($cachePath, '/') . '/';
+    public function __construct($cacheDir = 'cache/', $defaultTTL = 3600) {
+        $this->cacheDir = rtrim($cacheDir, '/') . '/';
         $this->defaultTTL = $defaultTTL;
-        
-        if (!is_dir($this->cachePath)) {
-            mkdir($this->cachePath, 0755, true);
+        $this->ensureCacheDirectory();
+    }
+    
+    private function ensureCacheDirectory() {
+        if (!is_dir($this->cacheDir)) {
+            mkdir($this->cacheDir, 0755, true);
         }
     }
     
-    /**
-     * Set cache value
-     */
-    public function set($key, $value, $ttl = null) {
-        if ($ttl === null) {
-            $ttl = $this->defaultTTL;
-        }
+    public function set($key, $data, $ttl = null) {
+        $ttl = $ttl ?? $this->defaultTTL;
+        $expiry = time() + $ttl;
         
         $cacheData = [
-            'value' => $value,
-            'expires' => time() + $ttl
+            'data' => $data,
+            'expiry' => $expiry,
+            'created' => time()
         ];
         
-        $filename = $this->cachePath . md5($key) . '.cache';
-        return file_put_contents($filename, serialize($cacheData)) !== false;
+        $filename = $this->getCacheFilename($key);
+        $content = serialize($cacheData);
+        
+        return file_put_contents($filename, $content, LOCK_EX) !== false;
     }
     
-    /**
-     * Get cache value
-     */
     public function get($key) {
-        $filename = $this->cachePath . md5($key) . '.cache';
+        $filename = $this->getCacheFilename($key);
         
         if (!file_exists($filename)) {
             return false;
         }
         
-        $cacheData = unserialize(file_get_contents($filename));
+        $content = file_get_contents($filename);
+        if ($content === false) {
+            return false;
+        }
         
-        if ($cacheData['expires'] < time()) {
+        $cacheData = unserialize($content);
+        if ($cacheData === false) {
+            return false;
+        }
+        
+        if (time() > $cacheData['expiry']) {
             unlink($filename);
             return false;
         }
         
-        return $cacheData['value'];
+        return $cacheData['data'];
     }
     
-    /**
-     * Delete cache
-     */
+    public function has($key) {
+        $filename = $this->getCacheFilename($key);
+        
+        if (!file_exists($filename)) {
+            return false;
+        }
+        
+        $content = file_get_contents($filename);
+        if ($content === false) {
+            return false;
+        }
+        
+        $cacheData = unserialize($content);
+        if ($cacheData === false) {
+            return false;
+        }
+        
+        if (time() > $cacheData['expiry']) {
+            unlink($filename);
+            return false;
+        }
+        
+        return true;
+    }
+    
     public function delete($key) {
-        $filename = $this->cachePath . md5($key) . '.cache';
+        $filename = $this->getCacheFilename($key);
+        
         if (file_exists($filename)) {
             return unlink($filename);
         }
+        
         return true;
     }
     
-    /**
-     * Clear all cache
-     */
     public function clear() {
-        $files = glob($this->cachePath . '*.cache');
+        $files = glob($this->cacheDir . '*.cache');
+        $deleted = 0;
+        
         foreach ($files as $file) {
-            unlink($file);
+            if (unlink($file)) {
+                $deleted++;
+            }
+        }
+        
+        return $deleted;
+    }
+    
+    public function clearExpired() {
+        $files = glob($this->cacheDir . '*.cache');
+        $deleted = 0;
+        
+        foreach ($files as $file) {
+            $content = file_get_contents($file);
+            if ($content !== false) {
+                $cacheData = unserialize($content);
+                if ($cacheData && time() > $cacheData['expiry']) {
+                    if (unlink($file)) {
+                        $deleted++;
+                    }
+                }
+            }
+        }
+        
+        return $deleted;
+    }
+    
+    public function getStats() {
+        $files = glob($this->cacheDir . '*.cache');
+        $totalSize = 0;
+        $expiredCount = 0;
+        $validCount = 0;
+        
+        foreach ($files as $file) {
+            $totalSize += filesize($file);
+            $content = file_get_contents($file);
+            
+            if ($content !== false) {
+                $cacheData = unserialize($content);
+                if ($cacheData && time() > $cacheData['expiry']) {
+                    $expiredCount++;
+                } else {
+                    $validCount++;
+                }
+            }
+        }
+        
+        return [
+            'total_files' => count($files),
+            'valid_files' => $validCount,
+            'expired_files' => $expiredCount,
+            'total_size' => $totalSize,
+            'cache_dir' => $this->cacheDir
+        ];
+    }
+    
+    public function remember($key, $callback, $ttl = null) {
+        if ($this->has($key)) {
+            return $this->get($key);
+        }
+        
+        $data = $callback();
+        $this->set($key, $data, $ttl);
+        
+        return $data;
+    }
+    
+    public function increment($key, $value = 1) {
+        $current = $this->get($key);
+        
+        if ($current === false) {
+            $current = 0;
+        }
+        
+        if (is_numeric($current)) {
+            $newValue = $current + $value;
+            $this->set($key, $newValue);
+            return $newValue;
+        }
+        
+        return false;
+    }
+    
+    public function decrement($key, $value = 1) {
+        return $this->increment($key, -$value);
+    }
+    
+    public function tags($tags) {
+        if (!is_array($tags)) {
+            $tags = [$tags];
+        }
+        
+        return new CacheTagManager($this, $tags);
+    }
+    
+    private function getCacheFilename($key) {
+        $safeKey = preg_replace('/[^a-zA-Z0-9_-]/', '_', $key);
+        return $this->cacheDir . $safeKey . '.cache';
+    }
+}
+
+/**
+ * Cache Tag Manager for grouped cache operations
+ */
+class CacheTagManager {
+    private $cacheManager;
+    private $tags;
+    
+    public function __construct($cacheManager, $tags) {
+        $this->cacheManager = $cacheManager;
+        $this->tags = $tags;
+    }
+    
+    public function flush() {
+        foreach ($this->tags as $tag) {
+            $this->cacheManager->delete("tag_$tag");
         }
         return true;
     }
     
-    /**
-     * Cache menu items
-     */
-    public function cacheMenu($categoryId = null) {
-        $key = 'menu_' . ($categoryId ?? 'all');
-        $db = new Db();
+    public function set($key, $data, $ttl = null) {
+        $this->cacheManager->set($key, $data, $ttl);
         
-        if ($categoryId) {
-            $sql = "SELECT * FROM food WHERE category_id = ? AND is_active = 1 ORDER BY name";
-            $menu = $db->query($sql, [$categoryId])->fetchAll();
-        } else {
-            $sql = "SELECT f.*, c.name as category_name FROM food f 
-                    LEFT JOIN menu_categories c ON f.category_id = c.id 
-                    WHERE f.is_active = 1 ORDER BY c.sort_order, f.name";
-            $menu = $db->query($sql)->fetchAll();
+        foreach ($this->tags as $tag) {
+            $tagKey = "tag_$tag";
+            $taggedKeys = $this->cacheManager->get($tagKey) ?: [];
+            $taggedKeys[] = $key;
+            $this->cacheManager->set($tagKey, $taggedKeys);
         }
-        
-        $this->set($key, $menu, 1800); // 30 minutes
-        return $menu;
-    }
-    
-    /**
-     * Cache popular items
-     */
-    public function cachePopularItems($limit = 10) {
-        $key = 'popular_items_' . $limit;
-        $db = new Db();
-        
-        $sql = "SELECT f.*, COUNT(oi.id) as order_count 
-                FROM food f 
-                LEFT JOIN order_items oi ON f.id = oi.food_id 
-                WHERE f.is_active = 1 
-                GROUP BY f.id 
-                ORDER BY order_count DESC 
-                LIMIT ?";
-        
-        $popular = $db->query($sql, [$limit])->fetchAll();
-        $this->set($key, $popular, 3600); // 1 hour
-        
-        return $popular;
     }
 }
 ?>
