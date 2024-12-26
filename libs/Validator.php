@@ -90,6 +90,42 @@ class Validator {
                     $this->addError($field, 'Please enter a valid URL');
                 }
                 break;
+                
+            case 'alpha':
+                if (!empty($value) && !ctype_alpha($value)) {
+                    $this->addError($field, 'This field must contain only letters');
+                }
+                break;
+                
+            case 'alphanumeric':
+                if (!empty($value) && !ctype_alnum($value)) {
+                    $this->addError($field, 'This field must contain only letters and numbers');
+                }
+                break;
+                
+            case 'integer':
+                if (!empty($value) && !filter_var($value, FILTER_VALIDATE_INT)) {
+                    $this->addError($field, 'This field must be an integer');
+                }
+                break;
+                
+            case 'decimal':
+                if (!empty($value) && !is_numeric($value) && !filter_var($value, FILTER_VALIDATE_FLOAT)) {
+                    $this->addError($field, 'This field must be a decimal number');
+                }
+                break;
+                
+            case 'in':
+                if (!empty($value) && !in_array($value, explode(',', $parameter))) {
+                    $this->addError($field, 'Invalid value selected');
+                }
+                break;
+                
+            case 'regex':
+                if (!empty($value) && !preg_match($parameter, $value)) {
+                    $this->addError($field, 'Invalid format');
+                }
+                break;
         }
     }
     
@@ -188,6 +224,80 @@ class Validator {
         }
         
         return $errors;
+    }
+    
+    /**
+     * Validate credit card number using Luhn algorithm
+     * @param string $number
+     * @return bool
+     */
+    public static function validateCreditCard($number) {
+        $number = preg_replace('/\D/', '', $number);
+        
+        if (strlen($number) < 13 || strlen($number) > 19) {
+            return false;
+        }
+        
+        $sum = 0;
+        $length = strlen($number);
+        $parity = $length % 2;
+        
+        for ($i = 0; $i < $length; $i++) {
+            $digit = $number[$i];
+            if ($i % 2 == $parity) {
+                $digit *= 2;
+                if ($digit > 9) {
+                    $digit -= 9;
+                }
+            }
+            $sum += $digit;
+        }
+        
+        return $sum % 10 == 0;
+    }
+    
+    /**
+     * Validate postal code format
+     * @param string $postalCode
+     * @param string $country
+     * @return bool
+     */
+    public static function validatePostalCode($postalCode, $country = 'US') {
+        $patterns = [
+            'US' => '/^\d{5}(-\d{4})?$/',
+            'CA' => '/^[A-Za-z]\d[A-Za-z] \d[A-Za-z]\d$/',
+            'UK' => '/^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/i'
+        ];
+        
+        $pattern = $patterns[$country] ?? '/^[\w\s-]{3,10}$/';
+        return preg_match($pattern, $postalCode);
+    }
+    
+    /**
+     * Validate time format
+     * @param string $time
+     * @param string $format
+     * @return bool
+     */
+    public static function validateTime($time, $format = 'H:i') {
+        $d = DateTime::createFromFormat($format, $time);
+        return $d && $d->format($format) === $time;
+    }
+    
+    /**
+     * Get validation rules for common fields
+     * @return array
+     */
+    public static function getCommonRules() {
+        return [
+            'name' => 'required|min:2|max:50|alpha',
+            'email' => 'required|email',
+            'phone' => 'required|phone',
+            'password' => 'required|min:8',
+            'confirm_password' => 'required|same:password',
+            'amount' => 'required|decimal',
+            'quantity' => 'required|integer|min:1'
+        ];
     }
 }
 ?>
