@@ -229,5 +229,79 @@ class Session {
             }
         }
     }
+    
+    /**
+     * Regenerate session ID for security
+     */
+    public static function regenerateId() {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+            $_SESSION['last_regeneration'] = time();
+        }
+    }
+    
+    /**
+     * Set session timeout
+     * @param int $seconds
+     */
+    public static function setTimeout($seconds) {
+        $_SESSION['timeout'] = $seconds;
+        $_SESSION['last_activity'] = time();
+    }
+    
+    /**
+     * Check if session is expired
+     * @return bool
+     */
+    public static function isExpired() {
+        if (!isset($_SESSION['last_activity']) || !isset($_SESSION['timeout'])) {
+            return false;
+        }
+        
+        return (time() - $_SESSION['last_activity']) > $_SESSION['timeout'];
+    }
+    
+    /**
+     * Update last activity timestamp
+     */
+    public static function updateActivity() {
+        $_SESSION['last_activity'] = time();
+    }
+    
+    /**
+     * Get session statistics
+     * @return array
+     */
+    public static function getStats() {
+        return [
+            'session_id' => session_id(),
+            'user_id' => self::getUserId(),
+            'username' => self::getUsername(),
+            'role' => self::getUserRole(),
+            'authenticated' => self::isAuthenticated(),
+            'login_time' => $_SESSION['login_time'] ?? null,
+            'last_activity' => $_SESSION['last_activity'] ?? null,
+            'timeout' => $_SESSION['timeout'] ?? null,
+            'created_at' => $_SESSION['created_at'] ?? null
+        ];
+    }
+    
+    /**
+     * Secure session data
+     * @param array $data
+     * @return array
+     */
+    public static function secureData($data) {
+        $sensitiveKeys = ['password', 'token', 'secret', 'key'];
+        $secured = $data;
+        
+        foreach ($sensitiveKeys as $key) {
+            if (isset($secured[$key])) {
+                $secured[$key] = '***HIDDEN***';
+            }
+        }
+        
+        return $secured;
+    }
 }
 ?>
