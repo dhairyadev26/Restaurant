@@ -15,23 +15,14 @@ Live Demo: https://food-restaurant.infinityfreeapp.com/
 ## Screenshots
 
 <p>
-  <img src="public/images/slide1.jpg" alt="Homepage Banner" width="640" />
+<img width="1900" height="881" alt="image" src="https://github.com/user-attachments/assets/0ec57f13-2b74-4669-a1aa-e7f3add1dde4" />
 </p>
-<p>
-  <img src="public/images/about1.jpg" alt="About Section" width="640" />
+<p><img width="1895" height="882" alt="image" src="https://github.com/user-attachments/assets/7ede00fe-a579-415b-95d7-b25bf33ec8c5" />
 </p>
-<p>
-  <img src="public/images/service1.jpg" alt="Services Section" width="640" />
+<p><img width="1892" height="871" alt="image" src="https://github.com/user-attachments/assets/ff64fc42-bafd-43bf-95e9-bcef9ef68273" />
 </p>
-<p>
-  <img src="public/images/team1.jpg" alt="Team Section" width="640" />
-</p>
-<p>
-  <img src="public/images/food1.jpg" alt="Food Gallery" width="640" />
-</p>
-<p>
-  <img src="public/images/contact.jpg" alt="Contact Section" width="640" />
-</p>
+
+ 
 
 ## Quick start (local, XAMPP)
 
