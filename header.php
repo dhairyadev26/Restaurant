@@ -16,7 +16,7 @@ Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, Sony
 <script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false);
 		function hideURLbar(){ window.scrollTo(0,1); } </script>	
 		
-<link rel="stylesheet" href="css/lightbox.css">
+<link rel="stylesheet" href="<?php echo BASEURL;?>public/css/lightbox.css">
 		
 <!-- //custom-theme files-->
 <link href="<?php echo BASEURL;?>public/css/bootstrap.css" rel="stylesheet" type="text/css" media="all" />

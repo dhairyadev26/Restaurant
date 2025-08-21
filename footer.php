@@ -6,7 +6,7 @@
 		
 	</div>
 	<div class="copyrightbottom">
-		<p>© 2021 Food Chef. All rights reserved | Developed by <a href="https://www.instagram.com/sankhala_rohit/">Rohit Sankhla</a></p>
+		<p>© 2025 Food Chef. All rights reserved | Developed by Niyati Raiyani</p>
 	</div>
 	<div class="clearfix"></div>
 </div>

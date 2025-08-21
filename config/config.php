@@ -1,10 +1,21 @@
 <?php 
-// Database Configuration
-define('BASEURL','http://localhost/hotel/');
-define('HOSTNAME','localhost');
-define('USERNAME','root');
-define('PASSWORD','');
-define('DB','foodchef');
+// Dynamic Base URL (works on localhost and hosting)
+$__scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+$__host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$__scriptDir = rtrim(str_replace('\\','/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+$__basePath = $__scriptDir === '' ? '/' : $__scriptDir . '/';
+define('BASEURL', $__scheme . '://' . $__host . $__basePath);
+
+// Optional host-specific overrides (create config/secrets.php on hosting)
+if (file_exists(__DIR__ . '/secrets.php')) {
+    require __DIR__ . '/secrets.php';
+}
+
+// Default DB settings (can be overridden in secrets.php)
+if (!defined('HOSTNAME')) define('HOSTNAME','localhost');
+if (!defined('USERNAME')) define('USERNAME','root');
+if (!defined('PASSWORD')) define('PASSWORD','');
+if (!defined('DB'))       define('DB','hotel');
 
 // Environment Configuration
 define('ENVIRONMENT', 'development'); // development, staging, production

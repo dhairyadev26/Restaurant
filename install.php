@@ -44,16 +44,15 @@ if (isset($_POST['install'])) {
         $sql = file_get_contents('database/project.sql');
         $pdo->exec($sql);
         
-        // Update config file
-        $config_content = "<?php 
-define('BASEURL','http://localhost/project/');
-define('HOSTNAME','$host');
-define('USERNAME','$username');
-define('PASSWORD','$password');
-define('DB','$database');
-?>";
-        
-        file_put_contents('config/config.php', $config_content);
+        // Write DB credentials to config/secrets.php (do not overwrite main config.php)
+        $secrets = "<?php\n" .
+            "define('HOSTNAME','" . addslashes($host) . "');\n" .
+            "define('USERNAME','" . addslashes($username) . "');\n" .
+            "define('PASSWORD','" . addslashes($password) . "');\n" .
+            "define('DB','" . addslashes($database) . "');\n" .
+            "?>";
+        if (!is_dir('config')) { mkdir('config', 0755, true); }
+        file_put_contents('config/secrets.php', $secrets);
         
         // Create installed lock file
         file_put_contents('config/installed.lock', date('Y-m-d H:i:s'));
@@ -62,7 +61,7 @@ define('DB','$database');
         echo "<h2>Installation Completed Successfully!</h2>";
         echo "<p>Your Food Chef Cafe Management System is now ready to use.</p>";
         echo "<p><strong>Admin Login:</strong> username: admin, password: admin123</p>";
-        echo "<p><a href='index.php'>Go to Homepage</a> | <a href='admin/'>Go to Admin Panel</a></p>";
+    echo "<p><a href='index.php'>Go to Homepage</a> | <a href='admin/'>Go to Admin Panel</a></p>";
         echo "</div>";
         
     } catch (PDOException $e) {

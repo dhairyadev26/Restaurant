@@ -220,11 +220,11 @@ try {
     // Update configuration file
     $configContent = "<?php 
 // Database Configuration
-define('BASEURL','http://localhost/hotel/');
+define('BASEURL','http://localhost/final/');
 define('HOSTNAME','localhost');
 define('USERNAME','root');
 define('PASSWORD','');
-define('DB','foodchef');
+define('DB','hotel');
 
 // Environment Configuration
 define('ENVIRONMENT', 'development');
